@@ -1,0 +1,23 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"   # Host:8080 → Container:80 (Nginx)
+    environment:
+      - VITE_API_URL=http://backend:1000  # Keep this for Docker-internal calls
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "1000:1000" # Host port 1000 → Backend port 1000
+    env_file:
+      - ./backend/.env
+    networks:
+      - app-network
+
+networks:
+  app-network:

@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18-bullseye'
+            args '-v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker'
+        }
+    }
 
     environment {
         DOCKER_REGISTRY = 'Monalishaa'
@@ -7,6 +12,15 @@ pipeline {
     }
 
     stages {
+        stage('Setup Tools') {
+            steps {
+                sh '''
+                    apt-get update -y
+                    apt-get install -y docker-compose-plugin
+                '''
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'master', 
@@ -37,17 +51,15 @@ pipeline {
 
         stage('Build Images') {
             steps {
-                script {
-                    docker.build("frontend:${env.GIT_COMMIT_SHORT}", "./frontend")
-                    docker.build("backend:${env.GIT_COMMIT_SHORT}", "./backend")
-                }
+                sh "docker build -t ${DOCKER_REGISTRY}/frontend:${GIT_COMMIT_SHORT} ./frontend"
+                sh "docker build -t ${DOCKER_REGISTRY}/backend:${GIT_COMMIT_SHORT} ./backend"
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'docker-compose down --remove-orphans'
-                sh 'docker-compose up -d --build'
+                sh 'docker compose -f docker-compose.yml down --remove-orphans'
+                sh 'docker compose -f docker-compose.yml up -d --build'
             }
         }
     }

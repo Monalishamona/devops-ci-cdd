@@ -2,7 +2,7 @@ services:
   frontend:
     build: ./frontend
     ports:
-      - "8080:80"   # Host:8080 → Container:80 (Nginx)
+      - "8000:80"   # Host:8080 → Container:80 (Nginx)
     environment:
       - VITE_API_URL=http://backend:1000  # Keep this for Docker-internal calls
     networks:

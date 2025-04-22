@@ -28,22 +28,24 @@ pipeline {
             }
         }
 
-        // Rest of your existing stages...
+        // Add your other stages here (Install & Test, Build Images, Deploy)
     }
 
     post {
         always {
             script {
-                node {
+                node('') {  // Fixed: Added empty label parameter
                     cleanWs()
                     sh 'docker system prune -f'
                 }
             }
         }
         failure {
-            node {
-                slackSend channel: '#ci-alerts', 
-                         message: "Build Failed: ${env.BUILD_URL}"
+            script {
+                node('') {  // Fixed: Added empty label parameter
+                    slackSend channel: '#ci-alerts', 
+                             message: "Build Failed: ${env.BUILD_URL}"
+                }
             }
         }
     }
